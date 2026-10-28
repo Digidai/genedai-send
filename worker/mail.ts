@@ -17,6 +17,7 @@ import {
   type ExternalProvider,
 } from "./provider";
 import { processCampaigns, sendMarketing } from "./marketing";
+import { sendCloudflare } from "./cloudflare";
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -347,7 +348,7 @@ export async function deliver(env: Env, emailId: string) {
     const result: EmailResult =
       row.provider !== "cloudflare"
         ? await sendMarketing(env, row, content.html, content.text)
-        : await env.EMAIL.send({
+        : await sendCloudflare(env, {
             from: row.from_email,
             to: row.to_email,
             subject: row.subject,

@@ -233,6 +233,10 @@ app.get("/api/config", async (c) => {
       app_url: c.env.APP_URL,
       sending_enabled: c.env.SEND_ENABLED === "true",
       sending_domains: c.env.SENDING_DOMAINS.split(",").filter(Boolean),
+      cloudflare_transport: c.env.CLOUDFLARE_EMAIL_API_TOKEN
+        ? "rest"
+        : "binding",
+      cloudflare_api_token_configured: !!c.env.CLOUDFLARE_EMAIL_API_TOKEN,
       provider: s.transactional_provider,
       marketing_provider: s.provider,
       marketing_enabled:

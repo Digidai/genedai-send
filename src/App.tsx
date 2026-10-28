@@ -3291,7 +3291,11 @@ function ProviderSettings({
         <div>
           <Cloud size={22} />
           <strong>Cloudflare</strong>
-          <small>Native Worker binding</small>
+          <small>
+            {config.cloudflare_transport === "rest"
+              ? "Email REST API"
+              : "Native Worker binding"}
+          </small>
           <Badge
             status={
               auth ? (config.sending_enabled ? "ready" : "pending") : "sample"

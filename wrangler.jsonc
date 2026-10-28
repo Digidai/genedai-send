@@ -39,6 +39,7 @@
   "vars": {
     "APP_URL": "https://send.genedai.me",
     "SENDING_DOMAINS": "genedai.me",
+    "CLOUDFLARE_EMAIL_ACCOUNT_ID": "48d9ccaf5ee7914c803b5d0656462848",
     "SEND_ENABLED": "true",
   },
   "observability": { "enabled": true, "head_sampling_rate": 0.1 },

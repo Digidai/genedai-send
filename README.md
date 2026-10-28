@@ -18,7 +18,7 @@
 - Scoped API keys, message history and signed provider delivery webhooks.
 - Cloudflare Email Routing handler with private inbound text/HTML storage and attachment metadata.
 
-Cloudflare native Email Service is transactional-only. Marketing always uses an optional external adapter. All application compute, data, content, queues and scheduling stay on Cloudflare; the selected external provider receives the messages it delivers.
+Cloudflare Email Service is transactional-only. The Cloudflare adapter uses a native Worker binding by default, or a dedicated account token via REST when `CLOUDFLARE_EMAIL_API_TOKEN` and `CLOUDFLARE_EMAIL_ACCOUNT_ID` are configured. Marketing always uses an optional external adapter. All application compute, data, content, queues and scheduling stay on Cloudflare; the selected external provider receives the messages it delivers.
 
 This is a single-owner v0.1 product, not a hosted multi-tenant ESP. Multi-user billing, visual branching, dynamic segment rules, domain warmup, a custom SMTP server, outbound customer webhooks and full attachment download are not included. Public preview data is fictional. No delivery-performance claim is made.
 

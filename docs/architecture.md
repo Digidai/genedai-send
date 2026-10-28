@@ -1,6 +1,6 @@
 # GeneSend architecture
 
-GeneSend is an MIT-licensed, single-owner email workspace. All application infrastructure runs on Cloudflare. Native Cloudflare Email Service delivers transactional messages; optional Resend and SendGrid adapters deliver transactional and marketing messages.
+GeneSend is an MIT-licensed, single-owner email workspace. All application infrastructure runs on Cloudflare. Cloudflare Email Service (native binding or dedicated-token REST) delivers transactional messages; optional Resend and SendGrid adapters deliver transactional and marketing messages.
 
 ## Runtime and data flow
 
@@ -57,6 +57,8 @@ Retries only occur for explicit rate/internal pre-delivery responses. Ambiguous 
 Owner bootstrap access uses a generated random key whose SHA-256 hash is a Worker secret. Login creates a random, hashed server-side session with a seven-day HttpOnly, Secure, SameSite=Strict cookie. Login attempts are limited by a salted IP hash. Browser mutations reject foreign Origin headers.
 
 API keys are random, scoped to send/read/contacts, shown once, hashed at rest and revocable. They are workspace-wide within their scopes; this is not tenant isolation. API calls are limited to 120 per key per minute. A public /api/demo tree serves only hard-coded fictional data; it never queries private tables.
+
+An optional Cloudflare Email REST token is kept in the Worker secret CLOUDFLARE_EMAIL_API_TOKEN, with its account ID in a non-secret environment variable. The reference token grants only Email Sending Write within the selected account; its policy grants no Workers, DNS or D1 permission. The Worker falls back to its native EMAIL binding when no dedicated token is present.
 
 ESP credentials are AES-GCM encrypted in D1 using a key derived from SESSION_SECRET. The Worker secret must be backed up securely. Do not rotate it casually: existing provider ciphertext and signed unsubscribe/tracking URLs rely on it. In this version key rotation requires a coordinated migration, not simply overwriting the secret. An administrator who can execute production Worker code can decrypt credentials; encryption protects storage disclosure, not a compromised runtime.
 

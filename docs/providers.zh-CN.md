@@ -23,7 +23,31 @@ Settings 顶部可以分别设置 **Default transactional channel** 和 **Market
 5. 部署后进入 Domains，添加域名并查看 DNS。GeneSend 的 TXT ownership challenge 不能替代 Cloudflare Email Service onboard。
 6. 任意收件人发送需要符合 Cloudflare Email Sending 的账户/付费资格；只给账户内 verified destinations 的规则另行适用。以 Cloudflare 的实际响应为准。
 
-当前 send.genedai.me 的安装使用原生 Worker binding；应用不需要保存 Cloudflare 全局 API key，也不会把本机 Wrangler OAuth token 注入 Worker。
+Cloudflare 通道支持 Worker binding 和专用 API Token 两种模式。不配置 token 时使用 binding；配置 `CLOUDFLARE_EMAIL_API_TOKEN` 后，自动使用 Cloudflare Email REST API。无论哪种模式都不需要 Cloudflare Global API Key，也不使用本机 Wrangler / CF CLI 的 OAuth token 作为线上运行凭据。
+
+### 使用 Cloudflare CLI 创建专用 token
+
+`cf` 与 Wrangler 使用独立登录。`cf auth whoami` 应显示已登录，授权范围含 `account_api_tokens:create` 和 Email Sending 权限。创建 token 使用 CF CLI；部署仍可使用 Wrangler。
+
+```bash
+umask 077
+mkdir -p secrets
+export CLOUDFLARE_ACCOUNT_ID="your_account_id"
+cf accounts tokens permission-groups list
+cf accounts tokens create \
+  --name "GeneSend production email sending" \
+  --policies @secrets/cloudflare-email-policy.json \
+  > secrets/cloudflare-email-token.json
+chmod 600 secrets/cloudflare-email-token.json
+```
+
+policy 文件应只包含目标账户的 Email Sending Write 权限（控制台中称 Email Sending: Edit）；permission group ID 从 CLI 的列表查询，`resources` 限定到 `com.cloudflare.api.account.<ACCOUNT_ID>`，不要授予 Workers、DNS、D1 等无关权限。创建响应中的 `value` 是仅显示一次的 token，需要直接保存到私有文件，不要打印到日志、提交到 Git 或发送到前端。
+
+用 token 响应中的 value 作为标准输入传给 `wrangler secret put CLOUDFLARE_EMAIL_API_TOKEN`，然后在 `wrangler.jsonc` 的 vars 中设置 `CLOUDFLARE_EMAIL_ACCOUNT_ID`，部署应用。API token 配置在 Worker Secret 中，不写在 vars。读取设置接口只返回是否配置及 transport，不返回凭据。
+
+删除该 secret 并部署后可恢复 Worker binding；不要用值为空的新 token 覆盖已有有效 token。token 可在 Cloudflare 的 Account API Tokens 页面按名称/ID 撤销。
+
+参考安装在 2026-10-28 创建了账户专用的 `GeneSend production email sending` token，并切换为 REST 模式。已核验 token active、邮件抑制列表 API 可访问。token policy 仅授予目标账户的 Email Sending Write，不包含 Workers、DNS 或 D1 权限；没有为配置验证发送真实邮件。
 
 常见错误：`E_SENDER_NOT_VERIFIED` / `E_SENDER_DOMAIN_NOT_AVAILABLE` 代表发送域未就绪；`E_RECIPIENT_NOT_ALLOWED` 代表账户或 binding 的收件人限制；`E_RATE_LIMIT_EXCEEDED` / `E_DAILY_LIMIT_EXCEEDED` 代表发送限额。明确的临时限流会退避重试，未知结果标记 uncertain。
 

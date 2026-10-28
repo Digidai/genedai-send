@@ -4,7 +4,7 @@ Evidence recorded for GeneSend v0.1. This file distinguishes local tests, deploy
 
 ## Automated local checks
 
-- 28 tests pass against actual Miniflare D1/R2 resources with mocked provider delivery.
+- 34 tests pass against actual Miniflare D1/R2 resources with mocked provider delivery.
 - Covered: authentication/private-data isolation, cross-origin mutation rejection, login limiting, scoped/revoked hashed keys, CSV validation, consent preservation, campaign provider guard, concurrent idempotency, atomic queue claims, delayed dispatch, suppressions at delivery, explicit rate retry, uncertain outcomes, cancellation, signed unsubscribe and event deduplication.
 - Marketing tests cover encrypted credential storage, audience snapshots, duplicate campaign planners, Resend footer/one-click/tracking, SendGrid correlation, pause/cancel, valid and tampered Svix/ECDSA callbacks.
 - Email preview test checks removal of navigation/refresh and restrictive CSP.
@@ -45,3 +45,13 @@ No real subscriber campaign was sent. Accepted is not proof of inbox placement. 
 Inbound handler code is present, but no production address routing rule was added. Full inbound acceptance needs a dedicated rule and a controlled message test.
 
 GitHub CI runs the committed test/build/audit workflow; consult the repository’s current Actions run for its live state rather than treating this document as a permanent green status.
+
+## Cloudflare token configuration — 2026-10-28
+
+A dedicated account-owned token was created using the Cloudflare CLI (`cf accounts tokens create`). Its policy grants only Email Sending Write in the reference account. The token value is stored only in an ignored local private credential file and the Worker Secret `CLOUDFLARE_EMAIL_API_TOKEN`.
+
+The account token verification endpoint reports active. The Email Sending suppression API authorizes the token. Reading this Worker's settings and accessing the other account's Email Sending suppression API both return 403; the generic Worker list endpoint returns an empty list.
+
+The deployment now selects Cloudflare Email REST when the dedicated token is configured, with the native binding retained as the default for installations without a token. Six additional tests cover native fallback, REST authorization and results, missing account configuration, permanent rejection, rate limiting, ambiguous failure and missing receipts.
+
+Deployment version: `6e789668-442b-4e0e-b466-5e69f43ff14d`. No real email was sent as part of this credential configuration.

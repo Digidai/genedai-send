@@ -10,6 +10,8 @@ export interface EmailResult {
 }
 export interface Env {
   DEV_ORIGIN?: string;
+  CLOUDFLARE_EMAIL_API_TOKEN?: string;
+  CLOUDFLARE_EMAIL_ACCOUNT_ID?: string;
   DB: D1Database;
   CONTENT: R2Bucket;
   SEND_QUEUE: Queue<{ id: string }>;
